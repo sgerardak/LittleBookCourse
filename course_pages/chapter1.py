@@ -1,107 +1,187 @@
 import streamlit as st
+from course_pages.chapter1_app import display_stock_analysis
+
 
 def app():
-    import streamlit as st
+    # Title and Introduction
+    st.title("📘 Chapter 1: Understanding the Basics")
+    st.write("By the end of this chapter, you’ll be able to answer these questions:")
+    st.markdown("""
+    - What is the **net income** of the company?
+    - How many **shares** does the company have?
+    - What are the **earnings per share (EPS)**?
+    - What is the **earnings yield**?
+    """)
+    st.divider()  # Horizontal separator for clarity
 
-    st.title("Chapter 1: Understanding the Basics")
-
+    # Section 1: Johnny's Magical Lemon Empire
+    st.header("🍋 Johnny and His Magical Lemons")
     st.write("""
-    By the end of this chapter, you’ll be able to answer these questions and see why they’re important for understanding a business:
+    Your best friend Johnny is an unusual guy. Some might even say he’s a little… eccentric. But that’s part of his charm.
+    Johnny runs a business selling magical lemons. Yes, you heard that right—**magical lemons**. These lemons are so good 
+    that anyone who buys one swears they can run faster, think sharper, and even sing in perfect pitch (but only for a day).
+    """)
+    st.write("""
+    Johnny buys each magical lemon for **\$0.50** and sells it for **\$1.00**. His stand is always buzzing with customers. 
+    Why? Because Johnny is not only a great salesman, but he’s also got a flair for theatrics—he wears a magician’s hat 
+    and calls himself “The Lemon Whisperer.”
+    """)
+    st.markdown("""
+    - **Daily Revenue**: \$1 × 200 = **\$200**
+    - **Daily Cost**: \$0.50 × 200 = **\$100**
+    - **Daily Profit**: \$200 - \$100 = **\$100**
+    """)
+    st.write("""
+    Johnny works his magic every day, and after a month, his profits look like this:
+    """)
+    st.markdown("""
+    - **Monthly Profit (Net Income)**: \$100 × 30 days = **\$3,000**
+    - **Annual Profit (Net Income)**: \$3,000 × 12 months = **\$36,000**
+    """)
+    st.divider()
 
-    What is the net income of the company?
-
-    How many shares does the company have?
-
-    What are the earnings per share (EPS)?
-
-    What is the earnings yield?
-
-    Answering these questions is a great starting point, and we’ll build from there. Let’s dive into an example to make things simple and fun.
+    # Section 2: Johnny Offers You a Slice of the Magic
+    st.header("💼 Johnny Offers You a Slice of the Magic")
+    st.write("""
+    One day, Johnny comes to you with his magician’s hat slightly tilted and says, 
+    “Hey, best friend! I’ve got an offer you can’t refuse. I’m dividing my magical lemon business into 
+    **100,000 shares**. Want in?”
+    """)
+    st.write("""
+    Being intrigued, you ask how much a share costs. Johnny, with a dramatic wave of his hand, announces, 
+    “Only **\$72** per share.”
+    """)
+    st.write("""
+    Now, before going ahead, let’s ponder:
+    """)
+    st.markdown("""
+    - **Is this a good deal?**
+    - **Why would it be a good deal?**
+    """)
+    st.write("""
+    It’s magical lemons—surely it should be a good deal, right? They’re magical, after all. 
+    But wait… maybe we should do the math first.
+    """)
+    st.write("""
+    Let's imagine that you buy **100 shares**. Since the company is divided into **100,000 shares**, 
+    those 100 shares would make you the owner of **1%** of the magical lemon company—much the same way 
+    as buying a share makes you a part-owner of a company in the stock market.
+    """)
+    st.markdown("""
+    - **Your Total Investment**: 100 shares × \$72 = **\$7,200**
+    """)
+    st.write("""
+    And since you now own **1%** of the company, that means **1% of the earnings are yours**!
+    """)
+    st.markdown("""
+    - **Your Share of Annual Profit**: \$36,000 × 0.01 = **\$360**
+    """)
+    st.write("""
+    Now, let’s calculate your **return on investment (ROI)**. ROI tells you what percentage of your investment 
+    you’re getting back in profit. To calculate ROI, we use the formula:
+    """)
+    st.markdown("""
+    **ROI = (Your Profit ÷ Your Investment) × 100**
+    """)
+    st.write("""
+    In this case:
+    """)
+    st.markdown("""
+    - **ROI = (360 ÷ 7,200) × 100 = 5%**
+    """)
+    st.write("""
+    At this price, your return would be **5%**, which honestly isn’t very magical. You politely decline, 
+    thinking you’d rather put your money in a **6% bond** or another investment. Johnny shrugs and says, 
+    “Suit yourself. But remember, you’re turning down magic.”
     """)
 
-    st.header("Johnny's Lemon Business")
+    st.divider()
 
+    # Section 3: The Crazy Market
+    st.header("🤯 The Crazy Market")
     st.write("""
-    Imagine your best friend Johnny runs a business selling lemons. Johnny buys each lemon for 50 cents and sells it for $1. He’s great at selling lemons and manages to sell 200 lemons every single day.
-
-    Here’s how the numbers add up:
-
-    Daily Revenue: $1 per lemon × 200 lemons = $200
-
-    Daily Cost: $0.50 per lemon × 200 lemons = $100
-
-    Daily Profit: $200 – $100 = $100
-
-    Now let’s see how much Johnny makes in a month. Assuming he keeps up this pace for 30 days:
-
-    Monthly Profit (Net Income): $100 per day × 30 days = $3,000
-
-    Annual Profit (Net Income): $3,000 × 12 = $36,000
-
-    So, Johnny’s business earns him $3,000 every month after covering all the costs of buying lemons. Not bad, right?
+    Johnny’s offers change daily, much like the stock market. One day he offers shares at **\$100**, 
+    then **\$60**, **\$50**, **\$40**, and finally **\$15**. You jump in at **\$15** and buy 100 shares.
     """)
-
-    st.header("Johnny Offers You a Deal")
-
     st.write("""
-    Well, now the interesting part comes. Johnny (since he’s your best friend) wants to sell you part of his profitable business. To do this, he divides his business into 100,000 shares and offers to sell you as many shares as you want.
-
-    What would be a good price? Let’s imagine Johnny sets the price at $72 per share. That means buying 100 shares would cost you:
-
-    Total Investment: $72 × 100 shares = $7,200
-
-    What does this mean? Since you now own 1% of the business (100 shares out of 100,000), then 1% profit is yours too. At the end of the year, you’d receive:
-
-    Your Share of Annual Profit: $36,000 × 0.01 = $360
-
-    Is this a good deal? Well as you can see you're getting only 5% of return for your investment at the end of the year ($360/$7,200). Well, in this case wouldn't it be better to get a 6% bond (or even higher these days) and just have your money secured? Well in this case the answer is yes.
+    Here’s the magical part: even though the price per share is lower, you’re still buying **100 shares**, 
+    which means you still own **1% of the company**. And owning 1% entitles you to **1% of the company’s earnings**, 
+    just like before.
     """)
-
-    st.header("The Crazy Market")
-
-    st.write("""
-    Well, Johnny's deal doesn’t seem great right now, so you decide to pass. The good news is, you know Johnny, and frankly, he’s a little crazy—he offers different deals every day (very much like the market). One day, Johnny offers a share for $100. Another day, it’s $60, then $50, $40, $30. Hmm… now it’s starting to get interesting. Finally, one day Johnny offers a share for $15 each. That’s when you decide to jump in.
-
-    Let’s examine the deal you took. Suppose you bought 100 shares:
-
-    Total Investment: $15 × 100 shares = $1,500
-
-    Your Share of Annual Profit (This doesn’t change since you still own 1%): $36,000 × 0.01 = $360
-
-    Now you’re getting $360 at the end of the year for the $1,500 you spent. That’s a 24% return! Suddenly, Johnny seems like a great friend.
-
-    As you may have guessed, Johnny’s behavior and the market have a lot in common. The market, just like Johnny, is full of opportunities if you wait for the right moment!
+    st.markdown("""
+    - **Your Total Investment**: 100 shares × \$15 = **\$1,500**
+    - **Your Share of Annual Profit**: \$36,000 × 0.01 = **\$360**
     """)
-
-    st.header("Key Market Terms")
-
     st.write("""
-    With Johnny's example, we learned some terms that are very commonly used in the market:
-
-    Net Income: $36,000
-
-    Outstanding Shares: 100,000
-
-    Earnings Per Share (EPS): Net Income / Outstanding Shares = $36,000 / 100,000 = $3.6
-
-    Earnings Yield: EPS / Share Price = $3.6 / $15 = 24%
+    Now let’s calculate your **return on investment (ROI)** again to see how much better this deal is:
     """)
-
-    st.header("Getting it Real!")
-
+    st.markdown("""
+    **ROI = (Your Profit ÷ Your Investment) × 100**
+    """)
     st.write("""
-    This is all really nice and pretty, but real businesses are not as simple as Johnny’s business. They have more costs, more expenses, taxes, and so on. This is true, and you can find all the details in the income statement of each company. But at the end of the day, every business will have a part where they tell you:
+    For this deal:
+    """)
+    st.markdown("""
+    - **ROI = (\$360 ÷ \$1,500) × 100 = 24%**
+    """)
+    st.write("""
+    This time, your ROI is **24%**, which is a fantastic return compared to the earlier offer of 5%. 
+    Waiting for the right moment paid off!
+    """)
+    st.write("""
+    Johnny’s pricing behavior reminds us of Benjamin Graham’s famous analogy: **“Mr. Market”**. Graham, 
+    one of the greatest investors of all time, described the market as a wildly unpredictable, schizophrenic 
+    business partner who offers to buy or sell shares at a different price every day. Your job? To take advantage of him when the price is right—just like you did with Johnny.
+    """)
+    st.divider()
 
-    The Net Adjusted Income
 
-    The Outstanding Shares
+    # Section 4: Key Market Terms
+    st.header("📚 Key Market Terms")
+    st.write("""
+    Johnny’s example introduces terms commonly used in the market:
+    """)
+    st.markdown("""
+    - **Net Income**: \$36,000
+    - **Outstanding Shares**: 100,000
+    - **Earnings Per Share (EPS)**: \$36,000 ÷ 100,000 = **\$3.6**
+    - **Earnings Yield**: \$3.6 ÷ \$15 = **24%**
+    """)
+    st.divider()
 
-    The Earnings Per Share (EPS)
+    # Section 5: Getting it Real
+    st.header("🔍 Getting it Real!")
+    st.write("""
+    Real businesses are more complex than Johnny’s. They have more costs, taxes, and expenses. Still, they publish key metrics:
+    """)
+    st.markdown("""
+    - **Net Income**
+    - **Outstanding Shares**
+    - **EPS (Earnings Per Share)**
+    - **Earnings Yield**
+    - **Stock Price**
+    """)
+    st.write("""
+    If digging through financial reports feels overwhelming, don’t worry. Use the stock analysis tool below to explore your favorite companies and find the magic in the market.
+    """)
+    st.divider()
 
-    The Stock Price
-    
-    The Earnings Yield
+    # Stock Analysis Tool
+    display_stock_analysis()
+    st.divider()
 
-    And if it feels like too much of a hassle to dig through income statements, here’s some good news: there’s a tool you can use to explore your favorite companies. Start looking at these metrics and find out which companies could be attractive for you!
+    # Conclusion Section
+    st.header("🎉 Wrapping Up Chapter 1")
+    st.write("""
+    Well, I hope you’re having fun with the market right now and that you’re starting to grasp some of the key ideas 
+    behind identifying good opportunities. We’ve explored how owning part of a company works, how share prices can affect 
+    your return on investment, and how the market can behave like a quirky, unpredictable character.
+
+    However, since this is **real money** we’re talking about, I’m sure you want confidence in knowing that the business 
+    you’re putting your money into is actually a **good business**. You’d probably want one with steady, reliable income not 
+    just a one-year miracle or at the very least, a business that isn’t handled by a *schizophrenic dude* like Johnny.
+
+    Luckily, this is just the **first chapter**! In the next chapters, we’re going to dive deeper into answering these 
+    important questions and learning how to spot truly good businesses.
     """)
 
