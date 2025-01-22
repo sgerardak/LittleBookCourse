@@ -98,9 +98,9 @@ def app():
 
     The Earnings Per Share (EPS)
 
-    The Earnings Yield
-
     The Stock Price
+    
+    The Earnings Yield
 
     And if it feels like too much of a hassle to dig through income statements, here’s some good news: there’s a tool you can use to explore your favorite companies. Start looking at these metrics and find out which companies could be attractive for you!
     """)
