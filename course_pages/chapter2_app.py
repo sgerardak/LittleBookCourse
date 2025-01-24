@@ -56,28 +56,24 @@ def display_stock_analysis():
             )
             balance_sheet = pd.DataFrame(
                 fmpsdk.balance_sheet_statement(apikey=API_KEY, symbol=stock_symbol, period="quarter")
-            )
-            stock_quote = pd.DataFrame(
-                fmpsdk.quote(apikey=API_KEY, symbol=stock_symbol)
-            )            
-            income_statement_reported = pd.DataFrame(
-                fmpsdk.income_statement_as_reported(apikey=API_KEY, symbol=stock_symbol, period="quarter")
-            )
+            )     
+
 
             # Calculate Key Metrics
-            stock_price=stock_quote["price"][0]
             net_income = income_statement["netIncome"][0:4].sum()
-            stocks = stock_quote["sharesOutstanding"][0]
-            eps = net_income / stocks
-            earnings_yield = eps / stock_price
+            total_debt = balance_sheet["totalDebt"][0]
+            total_equity = balance_sheet["totalStockholdersEquity"][0]
+            invested_capital = total_debt + total_equity
+            roc=net_income/invested_capital*100
+
 
             # Display Key Metrics
             st.subheader(f"📈 Financial Metrics for {stock_symbol.upper()}")
             st.write(f"**Net Income:** ${net_income:,.0f}")
-            st.write(f"**Outstanding Shares:** {stocks:,.0f}")
-            st.write(f"**EPS (Earnings Per Share):** ${eps:.2f}")
-            st.write(f"**Stock Price:** ${stock_price:.2f}")
-            st.write(f"**Earnings Yield:** {earnings_yield * 100:.2f}%")
+            st.write(f"**Total Debt:** ${total_debt:,.0f}")
+            st.write(f"**Equity:** ${total_equity:,.0f}")
+            st.write(f"**Invested Capital:** ${invested_capital:,.0f}")
+            st.write(f"**Return on Capital (ROC):** {roc:,.2f}%")
 
             # Expanders for Detailed Statements
             with st.expander("📜 View Income Statement (Last 4 Quarters)"):

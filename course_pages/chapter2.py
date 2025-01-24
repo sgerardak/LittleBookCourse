@@ -1,5 +1,5 @@
 import streamlit as st
-from course_pages.chapter1_app import display_stock_analysis
+from course_pages.chapter2_app import display_stock_analysis
 
 def app():
     # Title and Introduction
@@ -91,15 +91,15 @@ def app():
      # Section 5: Getting it Real
     st.header("🔍 Getting it Real!")
     st.write("""
-    It's fun to play with imaginary businnes like Johnny's Lemon Empire and Diego's Padelmania but isn't more fun to look at real business let's get down to it!
+    It's fun to play with imaginary businesses like Johnny's Lemon Empire and Diego's Padelmania but isn't more fun to look at real business let's get down to it!
     Explored metrics:
     """)
     st.markdown("""
+    - **Net Income**
+    - **Total Debt**
+    - **Equity**
+    - **Invested capital**
     - **Return on capital**
-    - **Outstanding Shares**
-    - **EPS (Earnings Per Share)**
-    - **Earnings Yield**
-    - **Stock Price**
     """)
     st.write("""
     If digging through financial reports feels overwhelming, don’t worry. Use the stock analysis tool below to explore your favorite companies and find the magic in the market.
@@ -111,9 +111,26 @@ def app():
     st.divider()
 
 
-    # Recap Section
-    st.header("Recap: What You’ve Learned 🔄")
-    st.write("- **Good businesses generate high returns on capital (ROC).**")
-    st.write("- Johnny’s Lemon Empire has a slightly lower ROC compared to Diego’s Padelmania.")
-    st.write("- Diego’s Padelmania scales better and is more resilient in declining markets.")
-    st.write("- Balancing profitability, scalability, and risk is key to making smart investment decisions. 📚")
+    # Next Steps Section
+    st.header("Next Steps")
+    st.write("Now that we’ve cracked the code for spotting bargains 🏷️ and identifying great businesses 💼, it’s time to move forward with purpose! Here’s what’s coming next:")
+
+    st.markdown(
+        """
+        - **Combine the Strategies**: Merge what you’ve learned into a single, powerful methodology.
+        - **Prove It Works**: Test this approach with historical data and real-world scenarios. 
+        - **Discover Today’s Winners**: Apply the magic formula to find the best businesses to invest in now.  
+        """
+    )
+
+    st.write(
+        "The strategies are in place, and the tools are ready. Now it’s your time to act—"
+        "get ready to unlock the secrets of successful investing!"
+        
+    )
+    st.markdown(
+        """<b>Let’s go to Chapter 3 and build the ultimate strategy! 🚀</b>""", 
+        unsafe_allow_html=True
+    )
+
+

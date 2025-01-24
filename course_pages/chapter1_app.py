@@ -60,9 +60,6 @@ def display_stock_analysis():
             stock_quote = pd.DataFrame(
                 fmpsdk.quote(apikey=API_KEY, symbol=stock_symbol)
             )            
-            income_statement_reported = pd.DataFrame(
-                fmpsdk.income_statement_as_reported(apikey=API_KEY, symbol=stock_symbol, period="quarter")
-            )
 
             # Calculate Key Metrics
             stock_price=stock_quote["price"][0]
