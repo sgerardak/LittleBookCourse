@@ -1,0 +1,21 @@
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+
+# VS Code settings
+.vscode/
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Data files
+*.csv
+
+# Streamlit cache/config
+.streamlit/
+*.db
+
+# Virtual environments
+.venv/
+env/
