@@ -6,7 +6,7 @@ def app():
     st.title("Welcome to the Little Book Interactive Course! 🎉")
 
     st.markdown("""
-    ### Hello, Individual Investors!
+    ### Hello, Investor Explorer!
 
     This interactive course is designed to help you achieve steady and rewarding returns in the stock market.  
     Why? Because **investing in the stock market is one of the best ways to grow your wealth over time.**  

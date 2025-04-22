@@ -1,10 +1,11 @@
 import streamlit as st
-from course_pages import chapter3, introduction, chapter1, chapter2,investment_pro  # Import your pages
+from course_pages import introduction, chapter1, chapter2,chapter3, chapter4,investment_pro  # Import your pages
 
 # Define a sidebar for navigation
 def main():
     st.sidebar.title("The Little Book")
-    menu = ["Introduction", "Chapter 1- Understanding the Basics", "Chapter 2- Indicators of a Good Business","Chapter 3- Acquirer's Multiple"]
+    menu = ["Introduction", "Chapter 1- Understanding the Basics", "Chapter 2- Indicators of a Good Business","Chapter 3- Acquirer's Multiple",
+            "Chapter 4- Financial Stability (FS-Score)"]
     choice = st.sidebar.radio("Go to", menu)
 
     # Load the selected page
@@ -16,6 +17,8 @@ def main():
         chapter2.app()
     elif choice == menu[3]:
         chapter3.app()
+    elif choice == menu[4]:
+        chapter4.app()
     ###elif choice == "Investment Pro":
     ###    investment_pro.app()'''
 
