@@ -11,7 +11,7 @@ def app():
     - Is it innovative?
     - Is it a leader in its sector?
 
-    All of those matter. But to me — and to any long-term, value-oriented investor — one question rises above the rest:""")
+    All of those matter. But to me — and to any long-term, value-oriented investor — one question always goes around:""")
     
     
     st.subheader("💡 Is this company financially stable?")
