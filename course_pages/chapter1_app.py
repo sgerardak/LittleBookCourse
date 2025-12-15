@@ -40,19 +40,6 @@ def _filter_morningstar_universe(stock_list: pd.DataFrame) -> pd.DataFrame:
 
 
 def _get_earnings_yield_for_symbol(symbol: str, api_key: str) -> dict | None:
-    """
-    Helper used both in this chapter screen and in the Appendix scanner.
-
-    Returns a dict with:
-      - symbol
-      - price
-      - net_income_ttm
-      - shares_outstanding
-      - eps_ttm
-      - earnings_yield
-
-    or None if anything is missing/invalid.
-    """
     try:
         # === Quote ===
         quote_raw = fmpsdk.quote(apikey=api_key, symbol=symbol)
@@ -60,44 +47,60 @@ def _get_earnings_yield_for_symbol(symbol: str, api_key: str) -> dict | None:
             return None
         stock_quote = pd.DataFrame(quote_raw)
 
+        # Parse quote fields safely
+        stock_price = pd.to_numeric(stock_quote.get("price"), errors="coerce").iloc[0]
+        shares_outstanding = pd.to_numeric(stock_quote.get("sharesOutstanding"), errors="coerce").iloc[0]
+        market_cap = pd.to_numeric(stock_quote.get("marketCap"), errors="coerce").iloc[0]  # NEW
+
+        if pd.isna(stock_price) or stock_price <= 0:
+            return None
+        if pd.isna(shares_outstanding) or shares_outstanding <= 0:
+            return None
+
         # === Income Statement (quarterly) ===
-        income_raw = fmpsdk.income_statement(
-            apikey=api_key,
-            symbol=symbol,
-            period="quarter"
-        )
+        income_raw = fmpsdk.income_statement(apikey=api_key, symbol=symbol, period="quarter")
         if not isinstance(income_raw, list) or len(income_raw) == 0:
             return None
         income_statement = pd.DataFrame(income_raw)
 
-        # Basic fields
-        stock_price = float(stock_quote["price"].iloc[0])
-        shares_outstanding = float(stock_quote["sharesOutstanding"].iloc[0])
+        # Sort by date, then TTM sum of last 4 quarters
+        if "date" in income_statement.columns:
+            income_statement["date"] = pd.to_datetime(income_statement["date"], errors="coerce")
+            income_statement = income_statement.sort_values("date", ascending=False)
 
-        # Be safe in case of weird values
-        if stock_price <= 0 or shares_outstanding <= 0:
-            return None
-
-        # TTM = sum of last 4 quarters
-        net_income = (
-            pd.to_numeric(income_statement["netIncome"], errors="coerce")
-            .iloc[:4]
-            .sum()
-        )
+        net_income = pd.to_numeric(income_statement.get("netIncome"), errors="coerce").head(4).sum()
 
         eps = net_income / shares_outstanding
         earnings_yield = eps / stock_price
 
+        # === Balance Sheet (quarterly) ===  NEW (for ROC)
+        balance_raw = fmpsdk.balance_sheet_statement(apikey=api_key, symbol=symbol, period="quarter")
+        roc = None
+        if isinstance(balance_raw, list) and len(balance_raw) > 0:
+            balance_sheet = pd.DataFrame(balance_raw)
+
+            if "date" in balance_sheet.columns:
+                balance_sheet["date"] = pd.to_datetime(balance_sheet["date"], errors="coerce")
+                balance_sheet = balance_sheet.sort_values("date", ascending=False)
+
+            total_debt = pd.to_numeric(balance_sheet.get("totalDebt"), errors="coerce").iloc[0]
+            total_equity = pd.to_numeric(balance_sheet.get("totalStockholdersEquity"), errors="coerce").iloc[0]
+            invested_capital = total_debt + total_equity
+
+            if pd.notna(invested_capital) and invested_capital > 0 and pd.notna(net_income):
+                roc = (net_income / invested_capital)  # as a ratio (0.15 = 15%)
+
         return {
             "symbol": symbol,
-            "price": stock_price,
-            "net_income_ttm": net_income,
-            "shares_outstanding": shares_outstanding,
-            "eps_ttm": eps,
-            "earnings_yield": earnings_yield,
+            "price": float(stock_price),
+            "market_cap": None if pd.isna(market_cap) else float(market_cap),  # NEW
+            "net_income_ttm": float(net_income),
+            "shares_outstanding": float(shares_outstanding),
+            "eps_ttm": float(eps),
+            "earnings_yield": float(earnings_yield),
+            "roc": None if roc is None else float(roc),  # NEW
         }
     except Exception:
-        # You could log the exception here if you want
         return None
 
 

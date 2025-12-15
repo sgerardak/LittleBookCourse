@@ -5,8 +5,9 @@ from course_pages import (
     chapter2,
     chapter3,
     chapter4,
-    investment_pro,
-    chapter1_appendix
+    Magic_Formula_Screener,
+    investment_pro
+    
 )
 
 def main():
@@ -15,8 +16,8 @@ def main():
     menu = [
         "Introduction",
         "Chapter 1- Understanding the Basics",
-        "Chapter 1 Appendix – Earnings Yield Scanner",
         "Chapter 2- Indicators of a Good Business",
+        "Magic Formula Screener",
         "Chapter 3- Acquirer's Multiple",
         "Chapter 4- Financial Stability (FS-Score)"
     ]
@@ -30,8 +31,8 @@ def main():
     elif choice == "Chapter 1- Understanding the Basics":
         chapter1.app()
 
-    elif choice == "Chapter 1 Appendix – Earnings Yield Scanner":
-        chapter1_appendix.app()
+    elif choice == "Magic Formula Screener":
+        Magic_Formula_Screener.app()
 
     elif choice == "Chapter 2- Indicators of a Good Business":
         chapter2.app()
