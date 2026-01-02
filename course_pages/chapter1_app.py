@@ -2,103 +2,10 @@
 import streamlit as st
 import pandas as pd
 import fmpsdk
-import random
-import time
+from course_pages.functions.stock_utils import fetch_stock_list, fetch_symbol_to_name
 
+# API key
 API_KEY = st.secrets["api"]["fmp_key"]
-
-
-def get_row_with_retries(sym, api_key, tries=4, min_market_cap=1_000_000_000, excluded_sectors=None):
-    for attempt in range(1, tries + 1):
-        try:
-            return _get_earnings_yield_for_symbol(
-                sym,
-                api_key,
-                min_market_cap=min_market_cap,
-                excluded_sectors=excluded_sectors,
-            )
-        except Exception as e:
-            sleep_s = min(8, 0.5 * (2 ** (attempt - 1))) + random.random() * 0.2
-            print(f"[RETRY {attempt}/{tries}] {sym}: {e} | sleeping {sleep_s:.2f}s")
-            time.sleep(sleep_s)
-    return None
-
-
-def _get_earnings_yield_for_symbol(
-    symbol: str,
-    api_key: str,
-    min_market_cap: int = 1_000_000_000,
-    excluded_sectors=None,
-) -> dict | None:
-    excluded_sectors = set(excluded_sectors) if excluded_sectors else set()
-
-    # --- Quote (price, shares, market cap) ---
-    quote_raw = fmpsdk.quote(apikey=api_key, symbol=symbol)
-    if not quote_raw:
-        raise RuntimeError("quote empty")
-
-    stock_quote = pd.DataFrame(quote_raw)
-
-    price = pd.to_numeric(stock_quote.get("price"), errors="coerce").iloc[0]
-    shares_outstanding = pd.to_numeric(stock_quote.get("sharesOutstanding"), errors="coerce").iloc[0]
-    market_cap = pd.to_numeric(stock_quote.get("marketCap"), errors="coerce").iloc[0]  # ✅ back to your working way
-
-    if pd.isna(price) or pd.isna(shares_outstanding) or price <= 0 or shares_outstanding <= 0:
-        return None
-
-    if pd.isna(market_cap) or market_cap < min_market_cap:
-        return None
-
-    # --- Profile (sector) ---
-    sector = None
-    if excluded_sectors:
-        profile_raw = fmpsdk.company_profile(apikey=api_key, symbol=symbol)
-        if not profile_raw:
-            raise RuntimeError("profile empty")
-        sector = profile_raw[0].get("sector")
-
-        if sector in excluded_sectors:
-            return None
-
-    # --- Income statement (TTM net income) ---
-    income_raw = fmpsdk.income_statement(apikey=api_key, symbol=symbol, period="quarter")
-    if not income_raw or len(income_raw) < 4:
-        raise RuntimeError("income empty/<4q")
-
-    income_df = pd.DataFrame(income_raw)
-    net_income_ttm = pd.to_numeric(income_df["netIncome"], errors="coerce").iloc[:4].sum()
-    if pd.isna(net_income_ttm):
-        return None
-
-    eps_ttm = float(net_income_ttm) / float(shares_outstanding)
-    earnings_yield = eps_ttm / float(price)
-
-    # --- Balance sheet (ROC) ---
-    balance_raw = fmpsdk.balance_sheet_statement(apikey=api_key, symbol=symbol, period="quarter")
-    if not balance_raw:
-        raise RuntimeError("balance empty")
-
-    balance = balance_raw[0]
-    total_debt = float(balance.get("totalDebt", 0) or 0)
-    equity = balance.get("totalStockholdersEquity")
-
-    roc = None
-    if equity is not None:
-        equity = float(equity)
-        invested_capital = total_debt + equity
-        roc = (float(net_income_ttm) / invested_capital) if invested_capital > 0 else None
-
-    return {
-        "symbol": symbol,
-        "sector": sector,
-        "market_cap": float(market_cap),
-        "price": float(price),
-        "net_income_ttm": float(net_income_ttm),
-        "shares_outstanding": float(shares_outstanding),
-        "eps_ttm": float(eps_ttm),
-        "earnings_yield": float(earnings_yield),
-        "roc": (float(roc) if roc is not None else None),
-    }
 
 
 def _filter_morningstar_universe(stock_list: pd.DataFrame) -> pd.DataFrame:
@@ -128,4 +35,138 @@ def _filter_morningstar_universe(stock_list: pd.DataFrame) -> pd.DataFrame:
     if "symbol" in df.columns:
         df = df[df["symbol"].apply(is_common_symbol)]
 
-    return df.drop_duplicates(subset=["symbol"]).sort_values("symbol")
+    df = df.drop_duplicates(subset=["symbol"]).sort_values("symbol")
+    return df
+
+
+def _get_earnings_yield_for_symbol(symbol: str, api_key: str) -> dict | None:
+    try:
+        # === Quote ===
+        quote_raw = fmpsdk.quote(apikey=api_key, symbol=symbol)
+        if not isinstance(quote_raw, list) or len(quote_raw) == 0:
+            return None
+        stock_quote = pd.DataFrame(quote_raw)
+
+        # Parse quote fields safely
+        stock_price = pd.to_numeric(stock_quote.get("price"), errors="coerce").iloc[0]
+        shares_outstanding = pd.to_numeric(stock_quote.get("sharesOutstanding"), errors="coerce").iloc[0]
+        market_cap = pd.to_numeric(stock_quote.get("marketCap"), errors="coerce").iloc[0]  # NEW
+
+        if pd.isna(stock_price) or stock_price <= 0:
+            return None
+        if pd.isna(shares_outstanding) or shares_outstanding <= 0:
+            return None
+
+        # === Income Statement (quarterly) ===
+        income_raw = fmpsdk.income_statement(apikey=api_key, symbol=symbol, period="quarter")
+        if not isinstance(income_raw, list) or len(income_raw) == 0:
+            return None
+        income_statement = pd.DataFrame(income_raw)
+
+        # Sort by date, then TTM sum of last 4 quarters
+        if "date" in income_statement.columns:
+            income_statement["date"] = pd.to_datetime(income_statement["date"], errors="coerce")
+            income_statement = income_statement.sort_values("date", ascending=False)
+
+        net_income = pd.to_numeric(income_statement.get("netIncome"), errors="coerce").head(4).sum()
+
+        eps = net_income / shares_outstanding
+        earnings_yield = eps / stock_price
+
+        # === Balance Sheet (quarterly) ===  NEW (for ROC)
+        balance_raw = fmpsdk.balance_sheet_statement(apikey=api_key, symbol=symbol, period="quarter")
+        roc = None
+        if isinstance(balance_raw, list) and len(balance_raw) > 0:
+            balance_sheet = pd.DataFrame(balance_raw)
+
+            if "date" in balance_sheet.columns:
+                balance_sheet["date"] = pd.to_datetime(balance_sheet["date"], errors="coerce")
+                balance_sheet = balance_sheet.sort_values("date", ascending=False)
+
+            total_debt = pd.to_numeric(balance_sheet.get("totalDebt"), errors="coerce").iloc[0]
+            total_equity = pd.to_numeric(balance_sheet.get("totalStockholdersEquity"), errors="coerce").iloc[0]
+            invested_capital = total_debt + total_equity
+
+            if pd.notna(invested_capital) and invested_capital > 0 and pd.notna(net_income):
+                roc = (net_income / invested_capital)  # as a ratio (0.15 = 15%)
+
+        return {
+            "symbol": symbol,
+            "price": float(stock_price),
+            "market_cap": None if pd.isna(market_cap) else float(market_cap),  # NEW
+            "net_income_ttm": float(net_income),
+            "shares_outstanding": float(shares_outstanding),
+            "eps_ttm": float(eps),
+            "earnings_yield": float(earnings_yield),
+            "roc": None if roc is None else float(roc),  # NEW
+        }
+    except Exception:
+        return None
+
+
+def display_stock_analysis():
+    st.title("📊 Stock Analysis Tool")
+    st.write("Analyze your favorite company's financial metrics in seconds.")
+
+    # Stock list and dropdown
+    stock_list_names = fetch_stock_list(API_KEY)
+    stock_list_names = _filter_morningstar_universe(stock_list_names)
+
+    symbol_to_name = fetch_symbol_to_name(stock_list_names)
+
+    default_index = (
+        stock_list_names[stock_list_names['symbol'] == "AAPL"].index[0]
+        if "AAPL" in stock_list_names['symbol'].values
+        else 0
+    )
+
+    stock_symbol = st.selectbox(
+        "Select a Stock",
+        options=stock_list_names['symbol'].tolist(),
+        index=int(default_index),
+        format_func=lambda x: f"{x} - {symbol_to_name.get(x, x)}",
+        help="Choose a stock by its ticker and name."
+    )
+
+    st.write(f"Selected Stock Symbol: {stock_symbol}")
+
+    if not stock_symbol:
+        st.info("Enter a stock ticker symbol to get started.")
+        return
+
+    st.divider()
+    try:
+        row = _get_earnings_yield_for_symbol(stock_symbol, API_KEY)
+        if row is None:
+            st.error("⚠️ Could not compute earnings yield (missing data).")
+            return
+
+        # === Display Metrics ===
+        st.subheader(f"📈 Financial Metrics for {stock_symbol.upper()}")
+        st.write(f"**Net Income (TTM):** ${row['net_income_ttm']:,.0f}")
+        st.write(f"**Outstanding Shares:** {row['shares_outstanding']:,.0f}")
+        st.write(f"**EPS (TTM):** ${row['eps_ttm']:.2f}")
+        st.write(f"**Stock Price:** ${row['price']:.2f}")
+        st.write(f"**Earnings Yield:** {row['earnings_yield'] * 100:.2f}%")
+
+        # If you still want detailed tables:
+        # re-fetch full statements to show in expanders
+        income_raw = fmpsdk.income_statement(
+            apikey=API_KEY, symbol=stock_symbol, period="quarter"
+        )
+        balance_raw = fmpsdk.balance_sheet_statement(
+            apikey=API_KEY, symbol=stock_symbol, period="quarter"
+        )
+
+        if isinstance(income_raw, list) and len(income_raw) > 0:
+            income_statement = pd.DataFrame(income_raw)
+            with st.expander("📜 View Income Statement (Last 4 Quarters)"):
+                st.dataframe(income_statement)
+
+        if isinstance(balance_raw, list) and len(balance_raw) > 0:
+            balance_sheet = pd.DataFrame(balance_raw)
+            with st.expander("📊 View Balance Sheet (Last 4 Quarters)"):
+                st.dataframe(balance_sheet)
+
+    except Exception as e:
+        st.error(f"⚠️ An error occurred: {e}")
