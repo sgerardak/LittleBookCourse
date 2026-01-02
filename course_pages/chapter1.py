@@ -1,5 +1,5 @@
 import streamlit as st
-from course_pages.chapter1_app import display_stock_analysis
+import course_pages.chapter1_app 
 
 
 def app():

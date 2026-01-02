@@ -5,6 +5,7 @@ from course_pages import (
     chapter2,
     chapter3,
     chapter4,
+    chapter5,
     Magic_Formula_Screener,
     investment_pro
     
@@ -19,7 +20,8 @@ def main():
         "Chapter 2- Indicators of a Good Business",
         "Magic Formula Screener",
         "Chapter 3- Acquirer's Multiple",
-        "Chapter 4- Financial Stability (FS-Score)"
+        "Chapter 4- Financial Stability (FS-Score)",
+        "Chapter 5- Intrinsic Value"
     ]
 
     choice = st.sidebar.radio("Go to", menu)
@@ -42,6 +44,9 @@ def main():
 
     elif choice == "Chapter 4- Financial Stability (FS-Score)":
         chapter4.app()
+
+    elif choice == "Chapter 5- Intrinsic Value":
+        chapter5.app()
 
 if __name__ == "__main__":
     main()
